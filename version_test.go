@@ -18,7 +18,7 @@ func TestGetVersion(t *testing.T) {
 
 	router.Handle("/", writeVesion)
 	router.HandleFunc("/manual", func(w http.ResponseWriter, r *http.Request) {
-		r = r.WithContext(context.WithValue(context.Background(), versioning.ContextKey, "11.0.5"))
+		r = r.WithContext(versioning.WithVersion(context.Background(), "11.0.5"))
 		writeVesion.ServeHTTP(w, r)
 	})
 

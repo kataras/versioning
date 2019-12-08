@@ -1,22 +1,17 @@
 package versioning
 
 import (
+	"context"
 	"net/http"
 	"strings"
 )
 
 var (
-	// ContextKey is the context key of the version, can be used to manually modify the "requested" version.
-	// Example of how you can change the default behavior to extract a requested version (which is by headers)
-	// from a "version" url parameter instead:
-	// func(w http.ResponseWriter, r *http.Request) { // &version=1
-	// 	r = r.WithContext(context.WithValue(r.Context(), versioning.ContextKey, r.URL.Query().Get("version")))
-	// 	nextHandler.ServeHTTP(w,r)
-	// }
-	ContextKey interface{} = "api.version"
-	// NotFound is the key that can be used inside a `Map` or inside `context.WithValue(r.Context(), versioning.ContextKey, versioning.NotFound)`
+	// contextKey is the context key of the version.
+	contextKey interface{} = "api.version"
+	// NotFound is the key that can be used inside a `Map` or inside `context.WithValue(r.Context(), versioning.contextKey, versioning.NotFound)`
 	// to tell that a version wasn't found, therefore the not found handler should handle the request instead.
-	NotFound = ContextKey.(string) + ".notfound"
+	NotFound = contextKey.(string) + ".notfound"
 )
 
 const (
@@ -56,10 +51,10 @@ var NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 // - "Accept-Version" header, i.e Accept-Version: "1.0"
 //
 // However, the end developer can also set a custom version for a handler trough a middleware by using the request's context's value
-// for versions (see `ContextKey` for further details on that).
+// for versions (see `WithVersion` for further details on that).
 func GetVersion(r *http.Request) string {
 	// firstly by context store, if manually set-ed by a middleware.
-	if v := r.Context().Value(ContextKey); v != nil {
+	if v := r.Context().Value(contextKey); v != nil {
 		if version, ok := v.(string); ok {
 			return version
 		}
@@ -97,4 +92,15 @@ func GetVersion(r *http.Request) string {
 	}
 
 	return NotFound
+}
+
+// WithVersion creates the new context that contains a passed version.
+// Example of how you can change the default behavior to extract a requested version (which is by headers)
+// from a "version" url parameter instead:
+// func(w http.ResponseWriter, r *http.Request) { // &version=1
+// 	r = r.WithContext(versioning.WithVersion(r.Context(), r.URL.Query().Get("version")))
+// 	nextHandler.ServeHTTP(w,r)
+// }
+func WithVersion(ctx context.Context, version string) context.Context {
+	return context.WithValue(ctx, contextKey, version)
 }
