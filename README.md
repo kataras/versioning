@@ -104,12 +104,12 @@ func myCustomVersionNotFound(w http.ResponseWriter, r *http.Request) {
 }
 
 router := http.NewServeMux()
-router.Handle("/", myMiddleware, versioning.NewMatcher(versioning.Map{
+router.Handle("/", myMiddleware(versioning.NewMatcher(versioning.Map{
     // v1Handler is a handler of yuors that will be executed only on version 1.
     "1.0":               v1Handler, 
     ">= 2, < 3":         v2Handler,
     versioning.NotFound: http.HandlerFunc(myCustomNotVersionFound),
-}))
+})))
 ```
 
 ### Deprecation
