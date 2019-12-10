@@ -79,7 +79,7 @@ func urlParamVersion(next http.Handler) http.Handler {
             // set a default version, e.g. 1.0
             version = "1.0"
         }
-        r = r.WithContext(context.WithValue(r.Context(), versioning.ContextKey, version))
+        r = r.WithContext(versioning.WithVersion(r.Context(), version))
         next.ServeHTTP(w, r)
     })
 }
